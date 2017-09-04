@@ -1,0 +1,21 @@
+Sprite BEAMB0, 512, 512
+{
+	Offset 256, 256
+	Patch BEAMB0, 0, 0 {}
+}
+
+Sprite BEAMO0, 512, 512
+{
+	Offset 256, 256
+	Patch BEAMO0, 0, 0 {}
+}
+
+Sprite FLASH0, 256, 256
+{
+	Offset 128, 128
+	XScale 2.5
+	YScale 2.5
+	Patch SunFlare, 0, 0
+}
+
+Sprite FLAMA0, 620, 622 { Offset 310, 311 Patch FLM1A0, 0, 0 }

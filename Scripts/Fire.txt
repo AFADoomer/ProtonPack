@@ -1,0 +1,38 @@
+// Flame Actor
+class Flame : Actor
+{
+	Default
+	{
+		+CLIENTSIDEONLY
+		+DONTSPLASH
+		+FORCEXYBILLBOARD
+		+MISSILE
+		+NOGRAVITY
+		+ROLLSPRITE
+		Height 2;
+		Radius 1;
+		RenderStyle "Add";
+		Speed 1;
+		Alpha 0.8;
+		Decal "ScorchSmall";
+		Scale 0.2;
+	}
+
+	States
+	{
+		Spawn:
+			FLAM A 2 Bright NoDelay Light("FireSmall")  {
+				roll = FRandom(0.0, 360.0);
+				A_SetScale(FRandom(0.07, 0.2));
+				ThrustThingZ(0, Random(2,6), 0, 0);
+				ThrustThing(Random(0,255), Random(0,1), 0, 0);
+			}
+		Death:
+		FadeLoop:
+			"####" # 2 Bright {
+				A_SetScale(Scale.X - 0.0125, Scale.Y - 0.0125);
+				A_FadeOut(.05);
+			}
+			Goto FadeLoop;
+	}
+}

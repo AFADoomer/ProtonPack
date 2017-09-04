@@ -1,0 +1,44 @@
+Model LightningTrailBeam
+{
+	Path "Models/"
+	Model 0 "beam.md3"
+
+	Path "Patches/"
+	Skin 0 "BEAMO0.png"
+
+	USEACTORPITCH
+
+	Scale 24.0 24.0 206.0
+
+	FrameIndex MODL A 0 0
+}
+
+Model LightningTrailBeamBlue
+{
+	Path "Models/"
+	Model 0 "beam.md3"
+
+	Path "Patches/"
+	Skin 0 "BEAMB0.png"
+
+	USEACTORPITCH
+
+	Scale 24.0 24.0 206.0
+
+	FrameIndex MODL A 0 0
+}
+
+Model LightningTrailBeamArc
+{
+	Path "Models/"
+	Model 0 "beam.md3"
+
+	Path "Patches/"
+	Skin 0 "BEAMG0.png"
+
+	USEACTORPITCH
+
+	Scale 24.0 24.0 206.0
+
+	FrameIndex MODL A 0 0
+}

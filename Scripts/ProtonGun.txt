@@ -1,0 +1,248 @@
+// Proton Pack weapon.  Sprites and some sounds from Ghouls versus Humans
+class ProtonPack : Weapon
+{
+	int counter;
+	Vector3 beamoffset;
+	Actor victim;
+	Actor firepoint;
+	Vector3 aimpoint;
+
+	double beamoffsetx;
+	double beamoffsety;
+	double beamoffsetz;
+
+	Property BeamX:beamoffsetx;
+	Property BeamY:beamoffsety;
+	Property BeamZ:beamoffsetz;
+
+	Default
+	{
+		+WEAPON.NOAUTOAIM
+		Obituary "$PROTONOBIT";
+		Inventory.PickupMessage "$PROTON";
+		Weapon.SelectionOrder 100;
+		Weapon.SlotNumber 6;
+		Weapon.Kickback 200;
+
+		ProtonPack.BeamX 10;
+		ProtonPack.BeamY 1;
+		ProtonPack.BeamZ 11.5;
+	}
+
+	States
+	{
+		Spawn:
+			PROT P -1;
+			Stop;
+		Ready:
+			PACK J 0 {
+				if (!invoker.firepoint) {
+					invoker.beamoffset = (invoker.beamoffsetx, invoker.beamoffsety, invoker.beamoffsetz);
+
+					invoker.firepoint = Spawn("WeaponSpot", (pos.x - invoker.beamoffset.y * cos(angle) + invoker.beamoffset.x * sin(angle), pos.y - invoker.beamoffset.y * sin(angle) + invoker.beamoffset.x * cos(angle), pos.z + invoker.beamoffset.z));
+
+					if (invoker.firepoint) {
+						invoker.firepoint.master = player.mo;
+						WeaponSpot(invoker.firepoint).beamoffset = invoker.beamoffset;
+					}
+				}
+			}
+			PACK JIHGFE 1;
+			PACK D 1 A_PlaySound("weapons/protonpack/ready");
+			PACK CB 1;
+		Ready.Loop:
+			PACK A 1 {
+				A_WeaponReady();
+
+				invoker.aimpoint = (0, 0, 0);
+
+				if (invoker.victim) {
+					if (abs(deltaangle(player.mo.angle, player.mo.angleto(invoker.victim))) > player.fov / 2) { invoker.victim = null; }
+				}
+			}
+			Loop;
+		Deselect:
+			PACK BCDEFGHIJ 1;
+			PACK J 0 { if (invoker.firepoint) { invoker.firepoint.Destroy(); } }
+		Deselect.Loop:
+			TNT1 A 1 A_Lower();
+			Loop;
+		Select:
+			TNT1 A 1 A_Raise();
+			Loop;
+		Fire:
+			PACK B 5 {
+				invoker.victim = null;
+				A_PlaySound("weapons/protonpack/fire/start", CHAN_WEAPON);
+			}
+			PACK CD 5;
+			PACK D 0 {
+ 				A_PlaySound("weapons/protonpack/fire/middle", CHAN_WEAPON, 1.0, true);
+			}
+		Hold:
+			PACK D 5 {
+				A_FireBullets(0, 0, 1, 0, "LightningPuffHidden", FBF_NORANDOMPUFFZ, 1024, "", -16, 3); // defines 'aimpoint' as the position of the puff spawn.
+
+				if (invoker.firepoint) {
+					Actor f = invoker.firepoint.Spawn("ProtonFlash", (invoker.firepoint.pos.x, invoker.firepoint.pos.y, invoker.firepoint.pos.z));
+					if (ProtonFlash(f)) {
+						f.master = player.mo;
+						ProtonFlash(f).origin = invoker.firepoint;
+					}
+
+					Actor p = invoker.firepoint.SpawnMissileAngleZSpeed(invoker.firepoint.pos.z, "LightningBeam", invoker.firepoint.angle, 0, GetDefaultSpeed("LightningBeam"), self, false);
+					if (LightningBeam(p)) {
+						p.master = player.mo;
+						p.pitch = pitch;
+						LightningBeam(p).wpnspot = invoker.firepoint;
+						if (player.mo.vel.length() > 0.001 ) { p.vel = player.mo.vel; }
+					}
+
+					if (invoker.counter >= 1) {
+						Actor b = invoker.firepoint.SpawnMissileAngleZSpeed(invoker.firepoint.pos.z, "LightningBeamBlue", FRandom(invoker.firepoint.angle - 15, invoker.firepoint.angle + 15), 0, GetDefaultSpeed("LightningBeamBlue"), self, false);
+						if (LightningBeam(b)) {
+							b.master = player.mo;
+							b.pitch = FRandom(pitch - 15, pitch + 15);
+							b.tracer = p;
+							LightningBeam(b).wpnspot = invoker.firepoint;
+							if (player.mo.vel.length() > 0.001 ) { b.vel = player.mo.vel; }
+						}
+						invoker.counter = 0;
+					}
+					invoker.counter++;
+				}
+
+				int speedmodifier = 8;
+
+				if (invoker.victim)
+				{
+					Speed = Default.Speed / speedmodifier;
+					PlayerPawn(player.mo).ViewBob = PlayerPawn(player.mo).Default.ViewBob / speedmodifier;
+
+					A_Face(invoker.victim, 0.25 * invoker.victim.mass / 100);
+
+					invoker.victim.vel = (0, 0, 0);
+				}
+				else
+				{
+					PlayerPawn(player.mo).ViewBob = 0;
+				}
+			}
+			PACK A 0 A_ReFire();
+			PACK A 0 {
+				Speed = Default.Speed;
+				PlayerPawn(player.mo).ViewBob = PlayerPawn(player.mo).Default.ViewBob;
+
+				A_PlaySound("weapons/protonpack/fire/end", CHAN_WEAPON);
+			}
+			PACK CB 1;
+			Goto Ready.Loop;
+	}
+}
+
+// Actor class that warps to specified offsets from the player and is used as beam origin
+Class WeaponSpot : Actor
+{
+	Vector3 beamoffset, offset;
+
+	Default 
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+NOTONAUTOMAP
+		+DONTSPLASH
+		+THRUACTORS
+		Radius 0;
+		Height 0;
+		Scale 0.4;
+		RenderStyle "None";
+	}
+	States
+	{
+		Spawn:
+			UNKN A -1;
+			Stop;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+
+		if (globalfreeze || level.Frozen) { return; }
+
+		Rotate();
+	}
+
+	void Rotate()
+	{
+		Vector2 temp;
+
+		if (master && master.player && beamoffset != (0, 0, 0)) {
+			temp = RotateVector((-beamoffset.y, beamoffset.z), master.roll);
+			offset = (beamoffset.x, temp.x, temp.y);
+
+			temp = RotateVector((offset.x, 0), -master.pitch);
+			offset = (temp.x, offset.y, temp.y);
+
+			temp = RotateVector((offset.x, offset.y), master.angle);
+			offset = (temp.x, temp.y, offset.z + (master.height * master.player.crouchfactor) / 2);
+
+			double bobangle = level.time / 20. * 360.;
+			double bob = master.player.bob * sin(bobangle) * (master.waterlevel > 1 ? 0.25 : 0.5);
+
+			offset.z += bob * PlayerPawn(master).ViewBob;
+
+			offset.z += beamoffset.z;
+
+			SetOrigin(master.pos + offset, true);
+
+			angle = master.angle;
+			pitch = -master.pitch;
+			roll = master.roll;
+		}
+	} 
+}
+
+// Weapon flash actor
+class ProtonFlash : Actor
+{
+	Actor origin;
+
+	Default
+	{
+		+NOINTERACTION;
+		+NOBLOCKMAP
+		+NOTONAUTOMAP
+		+DONTSPLASH
+		+THRUACTORS
+		+FORCEXYBILLBOARD
+		+INVISIBLE
+		Scale 0.0375;
+		RenderStyle "STYLE_Add";
+	}
+
+	States
+	{
+		Spawn:
+			FLAS H 6 Bright;
+			Stop;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+
+		if (globalfreeze || level.Frozen) { return; }
+
+		if (origin)
+		{
+			SetOrigin(origin.pos, true);
+
+			angle = origin.angle;
+			pitch = origin.pitch;
+			roll = origin.roll;
+
+			bInvisible = False;
+		}
+	}
+}

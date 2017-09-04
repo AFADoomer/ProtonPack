@@ -1,0 +1,3 @@
+[enu default]
+PROTON = "You got the proton pack!";
+PROTONOBIT = "%o was zapped by %k's proton pack.";

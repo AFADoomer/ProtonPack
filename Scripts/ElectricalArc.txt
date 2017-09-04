@@ -1,0 +1,47 @@
+// Various electrical arc/emitter effects
+
+class ElectricalArc : Actor
+{
+	Vector3 aimpoint;
+
+	Default
+	{
+		+NOGRAVITY
+	}
+
+	States
+	{
+		Spawn:
+			TNT1 A 1 A_LightningBeam();
+			Loop;
+	}
+
+	void A_LightningBeam(string beam = "LightningBeamArc")
+	{
+		bool spawned;
+		Actor p;
+
+		if (aimpoint == (0, 0, 0)) { A_CustomBulletAttack(0, 0, 1, 0, "LightningPuffHidden", 1024, CBAF_AIMFACING); }
+
+		[spawned, p] = A_SpawnItemEx(beam);
+		if (LightningBeam(p)) {
+			p.master = self;
+			p.pitch = pitch;
+			p.angle = angle;
+			LightningBeam(p).wpnspot = self;
+		}
+	}
+}
+
+class ElectricalPillar : ElectricalArc
+{
+	Default
+	{
+		-NOGRAVITY
+	}
+
+	override void PostBeginPlay()
+	{
+		pitch = -90;
+	}
+}

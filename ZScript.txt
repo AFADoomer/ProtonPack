@@ -1,0 +1,43 @@
+version 2.5
+
+#include "scripts/lightningbase.txt"
+#include "scripts/fire.txt"
+#include "scripts/protongun.txt"
+#include "scripts/electricalarc.txt"
+
+// Test Weapon
+class RailTest : Weapon
+{
+	Default
+	{
+		Radius 24;
+		Height 16;
+		Obituary "%o got railgunned by %k.";
+		Weapon.SelectionOrder 100;
+		Weapon.SlotNumber 6;
+		Weapon.Kickback 500;
+		AttackSound "weapons/rbeam";
+	}
+
+	States
+	{
+		Spawn:
+			LAUN A -1;
+			Stop;
+		Ready:
+			MISG A 1 A_WeaponReady;
+			Loop;
+		Deselect:
+			MISG A 1 A_Lower;
+			Loop;
+		Select:
+			MISG A 1 A_Raise;
+			Loop;
+		Fire:
+			MISG B 1;
+		Hold:
+			MISG B 1 A_RailAttack(1, 0, 0, "ff ff a0", "ff ff a0", 0, 0, "LightningPuffSmall", 0, 0, 128, 1);
+			TNT1 A 0 A_ReFire;
+			Goto Ready;
+	}
+}

@@ -1,0 +1,7 @@
+// Derived from "Nutrona Wand" sounds at http://hprops.com/sounds/
+weapons/protonpack/ready	ProHeat
+weapons/protonpack/fire/start	ProFireS
+weapons/protonpack/fire/middle	ProFireM
+weapons/protonpack/fire/end	ProFireE
+
+effects/fire			fire
