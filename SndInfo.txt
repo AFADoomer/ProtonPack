@@ -1,7 +1,9 @@
 // Derived from "Nutrona Wand" sounds at http://hprops.com/sounds/
+// and from Ghouls versus Humans mod assets
 weapons/protonpack/ready	ProHeat
 weapons/protonpack/fire/start	ProFireS
 weapons/protonpack/fire/middle	ProFireM
 weapons/protonpack/fire/end	ProFireE
 
+// Fire sound effect from Star Trek Voyager: Elite Force (I think?)
 effects/fire			fire

@@ -1,4 +1,5 @@
 // Flame Actor
+// Some code portions modified from Blade of Agony
 class Flame : Actor
 {
 	Default

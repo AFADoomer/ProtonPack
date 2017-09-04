@@ -1,4 +1,4 @@
-// Various electrical arc/emitter effects
+// Electrical emitter effects
 
 class ElectricalArc : Actor
 {
