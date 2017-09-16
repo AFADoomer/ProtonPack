@@ -1,0 +1,34 @@
+class GBStatusBar : DoomStatusBar
+{
+	override void Draw (int state, double TicFrac)
+	{
+		Super.Draw (state, TicFrac);
+
+		if (!automapactive && screenblocks < 12)
+		{
+			BeginHUD(1, False);
+			DrawOverlay();
+		}
+	}
+
+	void DrawOverlay()
+	{
+		if (CheckWeaponSelected("ProtonPack"))
+		{
+			int overheat = ProtonPack(CPlayer.ReadyWeapon).overheat;
+			bool overheated = ProtonPack(CPlayer.ReadyWeapon).overheated;
+			int frame = overheat / 10;
+			double alpha = min((overheat % 10) / 10., 0.9);
+			double blinkalpha = 1.0;
+
+			DrawImage("Power_0", (-35, -35), DI_ITEM_CENTER);
+
+			if (overheated) { blinkalpha = min(cos(level.time * 10) + 1.125, 0.9); }
+
+			DrawImage("Power_" .. frame, (-35, -35), DI_ITEM_CENTER, blinkalpha);
+			DrawImage("Power_" .. frame + 1, (-35, -35), DI_ITEM_CENTER, blinkalpha * alpha);
+
+//			DrawString(mAmountFont, FormatNumber(overheat, 3), (-35, -22), DI_TEXT_ALIGN_CENTER, Font.CR_GRAY);
+		}
+	}
+}

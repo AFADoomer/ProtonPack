@@ -31,6 +31,7 @@ class Flame : Actor
 		Death:
 		FadeLoop:
 			"####" # 2 Bright {
+				A_Explode(1, 1);
 				A_SetScale(Scale.X - 0.0125, Scale.Y - 0.0125);
 				A_FadeOut(.05);
 			}

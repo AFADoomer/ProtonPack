@@ -7,3 +7,15 @@ Sprite FLASH0, 256, 256
 }
 
 Sprite FLAMA0, 620, 622 { Offset 310, 311 Patch FLM1A0, 0, 0 }
+
+Sprite POWRA0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_0, 0, 0 }
+Sprite POWRB0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_1, 0, 0 }
+Sprite POWRC0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_2, 0, 0 }
+Sprite POWRD0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_3, 0, 0 }
+Sprite POWRE0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_4, 0, 0 }
+Sprite POWRF0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_5, 0, 0 }
+Sprite POWRG0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_6, 0, 0 }
+Sprite POWRH0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_7, 0, 0 }
+Sprite POWRI0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_8, 0, 0 }
+Sprite POWRJ0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_9, 0, 0 }
+Sprite POWRK0, 51, 51 { Offset 51, 51 XScale 1.5 YScale 1.8 Patch Power_10, 0, 0 }

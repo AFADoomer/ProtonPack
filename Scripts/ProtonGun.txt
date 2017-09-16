@@ -1,7 +1,8 @@
 // Proton Pack weapon.  Sprites and some sounds from Ghouls versus Humans
 class ProtonPack : Weapon
 {
-	int counter;
+	int overheat, counter, victimcount;
+	bool overheated;
 	Vector3 beamoffset;
 	Actor victim;
 	Actor firepoint;
@@ -52,13 +53,23 @@ class ProtonPack : Weapon
 			PACK CB 1;
 		Ready.Loop:
 			PACK A 1 {
-				A_WeaponReady();
-
 				invoker.aimpoint = (0, 0, 0);
+				invoker.victim = null;
 
 				if (invoker.victim) {
 					if (abs(deltaangle(player.mo.angle, player.mo.angleto(invoker.victim))) > player.fov / 2) { invoker.victim = null; }
 				}
+
+				if (invoker.overheated && invoker.overheat > 0) {
+					if (level.time % 5 == 0) { invoker.overheat--; }
+					A_WeaponReady(WRF_NOFIRE);
+				}
+				else {	
+					invoker.overheated = false;
+					if (invoker.overheat > 0) { invoker.overheat--; }
+					A_WeaponReady();
+				}
+				invoker.victimcount--;
 			}
 			Loop;
 		Deselect:
@@ -71,6 +82,12 @@ class ProtonPack : Weapon
 			TNT1 A 1 A_Raise();
 			Loop;
 		Fire:
+			PACK B 0 {
+				if (invoker.overheated) {
+					return ResolveState("Ready.Loop");
+				}
+				return ResolveState(null);
+			}
 			PACK B 5 {
 				invoker.victim = null;
 				A_PlaySound("weapons/protonpack/fire/start", CHAN_WEAPON);
@@ -80,6 +97,10 @@ class ProtonPack : Weapon
  				A_PlaySound("weapons/protonpack/fire/middle", CHAN_WEAPON, 1.0, true);
 			}
 		Hold:
+			PACK D 0 {
+				if (invoker.overheat >= 100) { return ResolveState("Burnout"); }
+				return ResolveState(null);
+			}
 			PACK D 5 {
 				A_FireBullets(0, 0, 1, 0, "LightningPuffHidden", FBF_NORANDOMPUFFZ, 1024, "", -16, 3); // defines 'aimpoint' as the position of the puff spawn.
 
@@ -114,7 +135,7 @@ class ProtonPack : Weapon
 
 				int speedmodifier = 8;
 
-				if (invoker.victim)
+				if (invoker.victim && invoker.victim.bIsmonster && invoker.victim.bShootable)
 				{
 					Speed = Default.Speed / speedmodifier;
 					PlayerPawn(player.mo).ViewBob = PlayerPawn(player.mo).Default.ViewBob / speedmodifier;
@@ -125,10 +146,14 @@ class ProtonPack : Weapon
 				}
 				else
 				{
+					Speed = Default.Speed;
 					PlayerPawn(player.mo).ViewBob = 0;
 				}
+
+				invoker.overheat++;
 			}
 			PACK A 0 A_ReFire();
+		Done:
 			PACK A 0 {
 				Speed = Default.Speed;
 				PlayerPawn(player.mo).ViewBob = PlayerPawn(player.mo).Default.ViewBob;
@@ -137,6 +162,12 @@ class ProtonPack : Weapon
 			}
 			PACK CB 1;
 			Goto Ready.Loop;
+		Burnout:
+			PACK C 5 {
+				invoker.overheated = true;
+				A_WeaponReady(WRF_NOFIRE);
+			}
+			Goto Done;
 	}
 }
 

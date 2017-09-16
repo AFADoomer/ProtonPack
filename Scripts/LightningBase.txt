@@ -43,6 +43,12 @@ Class LightningPuff : Actor
 
 		if (globalfreeze || level.Frozen) { return; }
 
+		SetAimPoint();
+		DoFireball();
+	}
+
+	void SetAimPoint()
+	{
 		if (target)
 		{
 			if (target.player && target.player.ReadyWeapon is "ProtonPack")
@@ -54,11 +60,26 @@ Class LightningPuff : Actor
 
 				Vector3 temp = ProtonPack(target.player.ReadyWeapon).aimpoint;
 
-				int targetdelay = 35;
+				// This sets the speed of the "dragging" effect of the beam across surfaces
+				int targetdelay = 15;
 
 				ProtonPack(target.player.ReadyWeapon).aimpoint = ((self.pos.x + (targetdelay - 1) * temp.x) / targetdelay, (self.pos.y + (targetdelay - 1) * temp.y) / targetdelay, (self.pos.z + 8 + (targetdelay - 1) * temp.z) / targetdelay);
 
-				if (!ProtonPack(target.player.ReadyWeapon).victim)
+			}
+			else if (target is "ElectricalArc")
+			{
+				ElectricalArc(target).aimpoint = self.pos;
+			}
+		}
+	}
+
+	void DoFireball()
+	{
+		if (target)
+		{
+			if (target.player && target.player.ReadyWeapon is "ProtonPack")
+			{
+				if (ProtonPack(target.player.ReadyWeapon).victimcount <= 0)
 				{
 					Actor p = Spawn("Flame", ProtonPack(target.player.ReadyWeapon).aimpoint);
 
@@ -70,10 +91,6 @@ Class LightningPuff : Actor
 					}
 				}
 			}
-			else if (target is "ElectricalArc")
-			{
-				ElectricalArc(target).aimpoint = self.pos;
-			}
 		}
 	}
 }
@@ -84,6 +101,15 @@ Class LightningPuffSmall : LightningPuff
 	{
 		Decal "RailScorchLower";
 	}
+
+	override void Tick()
+	{
+		Actor.Tick();
+
+		if (globalfreeze || level.Frozen) { return; }
+
+		SetAimPoint();
+	}
 }
 
 Class LightningPuffHidden : LightningPuff
@@ -91,6 +117,16 @@ Class LightningPuffHidden : LightningPuff
 	Default 
 	{
 		Decal "";
+	}
+
+	override void Tick()
+	{
+		Actor.Tick();
+
+		if (globalfreeze || level.Frozen) { return; }
+
+		SetAimPoint();
+		DoFireBall();
 	}
 }
 
@@ -207,7 +243,7 @@ Class LightningBeam : Actor
 							if (origindist && origindist < 64) { locked = true; }
 						}
 
-						if (tracer.bIsMonster && (!tracer.bShootable || tracer.health <= 0)) { tracer = null; }
+						if (tracer.bIsMonster && (!tracer.bShootable || tracer.health <= 0)) { tracer = null; locked = false; }
 					}
 					else
 					{
@@ -242,7 +278,7 @@ Class LightningBeam : Actor
 					}
 				}
 
-				if (tracer && (locked || tracer.bIsMonster && Distance3d(tracer) <= tracer.radius + 8)) {
+				if (tracer && (locked || tracer.bIsMonster && tracer.bShootable && Distance3d(tracer) <= tracer.radius + 8)) {
 					StepDistance = max(int(tracer.Radius / Random[lasso](8, 10)), 1) * StepFactor;
 					Scale.Y = 0.001953125 * StepDistance;
 
@@ -250,6 +286,7 @@ Class LightningBeam : Actor
 
 					if (origin && origin.player && ProtonPack(origin.player.ReadyWeapon)) {
 						ProtonPack(origin.player.ReadyWeapon).victim = tracer;
+						ProtonPack(origin.player.ReadyWeapon).victimcount = 5;
 
 						if (origindist > 64) { A_FaceTracer(0, 5, 90, 0, FAF_MIDDLE); }
 
@@ -262,7 +299,7 @@ Class LightningBeam : Actor
 
 						user_distb = origin.Distance3d(tracer) + tracer.radius * 14; // Base number of 'wrapping' segments on the radius of the actor
 
-						if (tracer && tracer.bIsMonster)
+						if (tracer && tracer.bIsMonster && tracer.bShootable && tracer.health > 0)
 						{
 							tracer.bNoBlockMonst = True;
 							tracer.A_Face(origin);
@@ -275,12 +312,17 @@ Class LightningBeam : Actor
 						}
 						else
 						{
+							tracer = null;
+
+							ProtonPack(origin.player.ReadyWeapon).victim = null;
 							locked = false;
 						}
 					}
 				}
 				else {
 					Vector3 aimpoint;
+
+					ProtonPack(origin.player.ReadyWeapon).victim = null;
 
 					if (origin)
 					{
@@ -318,7 +360,9 @@ Class LightningBeam : Actor
 							user_choke--;
 						}
 						else 
-						{	user_choke = random(ChokeMin,ChokeMax);	}
+						{
+							user_choke = random(ChokeMin,ChokeMax);
+						}
 					}
 
 					// Spawn a split from the main beam
@@ -348,6 +392,7 @@ Class LightningBeam : Actor
 				if (MovingTrailBeam(t)) {
 					t.target = origin;
 					MovingTrailBeam(t).origin = wpnspot;
+					MovingTrailBeam(t).beamlocked = locked;
 					t.tracer = master;
 					t.pitch = pitch + 90;
 				}
@@ -367,6 +412,7 @@ Class LightningBeam : Actor
 		while (mo = Actor(Finder.Next()))
 		{
 			if (mo == self || mo == origin || !mo.bShootable || mo.bDormant || !mo.bIsMonster) { continue; }
+//			if (mo.health > mo.Default.Health / 4) { continue; }
 			if (!origin.IsVisible(mo, true)) { continue; }
 			if (Distance3d(mo) > 256) { continue; }
 			if (closest && Distance3d(mo) > Distance3d(closest)) { continue; }
@@ -418,6 +464,7 @@ Class MovingTrailBeam : Actor
 	String puff;
 	Vector3 beamoffset;
 	Actor origin;
+	bool beamlocked;
 	bool originset;
 	int damage;
 
@@ -453,10 +500,8 @@ Class MovingTrailBeam : Actor
 		Super.PostBeginPlay();
 
 		// Used to make all individual bolt segments leave decals and cause damage
-		if (target)
-		{
-			if (Distance3D(target) > target.radius * 2) { A_CustomBulletAttack(0, 0, 1, damage, puff, 24, CBAF_AIMFACING); }
-		}
+
+		A_CustomBulletAttack(0, 0, 1, damage, puff, 24, CBAF_AIMFACING);
 
 		if (origin) {
 			beamoffset = pos - origin.pos;
@@ -485,6 +530,7 @@ Class LightningTrailBeam : MovingTrailBeam
 	Default
 	{
 		MovingTrailBeam.TrailActor "LightningTrailBeam";
+		MovingTrailBeam.PuffActor "LightningPuff";
 	}
 }
 
