@@ -322,11 +322,13 @@ Class LightningBeam : Actor
 				else {
 					Vector3 aimpoint;
 
-					ProtonPack(origin.player.ReadyWeapon).victim = null;
-
 					if (origin)
 					{
-						if (origin.player) { aimpoint = ProtonPack(origin.player.ReadyWeapon).aimpoint; }
+						if (origin.player)
+						{
+							ProtonPack(origin.player.ReadyWeapon).victim = null;
+							aimpoint = ProtonPack(origin.player.ReadyWeapon).aimpoint;
+						}
 						else if (ElectricalArc(origin)) { aimpoint = ElectricalArc(origin).aimpoint; }
 					}
 
