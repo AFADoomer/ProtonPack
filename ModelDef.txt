@@ -8,7 +8,7 @@ Model LightningTrailBeam
 
 	USEACTORPITCH
 
-	Scale 24.0 24.0 206.0
+	Scale 24.0 24.0 0.40234375
 
 	FrameIndex MODL A 0 0
 }
@@ -23,7 +23,7 @@ Model LightningTrailBeamBlue
 
 	USEACTORPITCH
 
-	Scale 24.0 24.0 206.0
+	Scale 24.0 24.0 0.40234375
 
 	FrameIndex MODL A 0 0
 }
@@ -38,7 +38,7 @@ Model LightningTrailBeamArc
 
 	USEACTORPITCH
 
-	Scale 24.0 24.0 206.0
+	Scale 24.0 24.0 0.40234375
 
 	FrameIndex MODL A 0 0
 }

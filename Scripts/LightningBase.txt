@@ -63,7 +63,10 @@ Class LightningPuff : Actor
 				// This sets the speed of the "dragging" effect of the beam across surfaces
 				int targetdelay = 15;
 
-				ProtonPack(target.player.ReadyWeapon).aimpoint = ((self.pos.x + (targetdelay - 1) * temp.x) / targetdelay, (self.pos.y + (targetdelay - 1) * temp.y) / targetdelay, (self.pos.z + 8 + (targetdelay - 1) * temp.z) / targetdelay);
+				if (targetdelay > 1)
+				{
+					ProtonPack(target.player.ReadyWeapon).aimpoint = ((self.pos.x + (targetdelay - 1) * temp.x) / targetdelay, (self.pos.y + (targetdelay - 1) * temp.y) / targetdelay, (self.pos.z + 8 + (targetdelay - 1) * temp.z) / targetdelay);
+				}
 
 			}
 			else if (target is "ElectricalArc")
@@ -175,6 +178,7 @@ Class LightningBeam : Actor
 		+NOCLIP
 		+NOINTERACTION
 		+NOBLOCKMAP
+		+INTERPOLATEANGLES
 		RenderStyle "None";
 
 		LightningBeam.MaxDistance 1024;
@@ -201,7 +205,7 @@ Class LightningBeam : Actor
 			StepDistance = Random[steps](3, 15) * stepfactor;
 	
 			if (Scale.X == 1.0) { Scale.X = minscale; } //min(0.0125, minscale);
-			Scale.Y = 0.001953125 * StepDistance;
+			Scale.Y = StepDistance;
 
 			user_flags = SXF_NOCHECKPOSITION | SXF_TRANSFERSCALE | SXF_TRANSFERPITCH | SXF_TRANSFERPOINTERS;
 			return ResolveState("Moving");
@@ -280,7 +284,7 @@ Class LightningBeam : Actor
 
 				if (tracer && (locked || tracer.bIsMonster && tracer.bShootable && Distance3d(tracer) <= tracer.radius + 8)) {
 					StepDistance = max(int(tracer.Radius / Random[lasso](8, 10)), 1) * StepFactor;
-					Scale.Y = 0.001953125 * StepDistance;
+					Scale.Y = StepDistance;
 
 					if (abs(pitch) < 1) { pitch = Random[beam](-90, 90); }
 
@@ -479,6 +483,7 @@ Class MovingTrailBeam : Actor
 		+NOINTERACTION
 		+BRIGHT
 		+INVISIBLE
+		+INTERPOLATEANGLES
 		YScale 0.1220703125; //0.25; //Don't touch this! Otherwise the trail will become broken up!
 		XScale 0.03; //This modifies the width of the beam. It is safe to play around with.
 		RenderStyle "Add";
